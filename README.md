@@ -26,16 +26,17 @@ More info about TR-064: http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_firs
 Connect to the device and read a Service.
 
 ```javascript
-var prowl = require('myprowl');
-prowl.keys.setApikey("API-KEY");
-prowl.add.simple("myApp","TestEvent","myDescription", function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-	}else{
-		console.log(error);
-	}
+var tr = require("tr-064");
+var tr064 = new tr.TR064();
+tr064.initTR064Device("fritz.box", 49000, function (err, device) {
+    if (!err) {
+       var wanip = device.services["urn:dslforum-org:service:WANIPConnection:1"];
+       wanip.actions.GetInfo(function(err, result){
+       		console.log(result);
+       });
+    }
 });
+
 ```
 
 ## List All Services and Variables
@@ -43,114 +44,69 @@ prowl.add.simple("myApp","TestEvent","myDescription", function(error,response){
 Get the info from both protocols.
 
 ```javascript
-var prowl = require('myprowl');
-prowl.keys.setApikey("API-KEY");
-prowl.add.complex({
-		priority: 1,
-		url: "http://http://nodejs.org",
-		application: "TestApp",
-		event: "TestEvent",
-		description: "TestDescription"
-	}, 
-	function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-	}else{
-		console.log(error);
-	}
+var tr = require("tr-064");
+var tr064 = new tr.TR064();
+tr064.initTR064Device("fritz.box", 49000, function (err, device) {
+    if (!err) {
+        console.log("Found device! - TR-064");
+        showDevice(device);
+    }
 });
+
+tr064.initIGDDevice("fritz.box", 49000, function (err, device) {
+    if (!err) {
+        console.log("Found device! - IGD");
+        showDevice(device);
+    }
+});
+
+var showDevice = function (device) {
+    console.log("=== " + device.meta.friendlyName + " ===");
+    device.meta.servicesInfo.forEach(function (serviceType) {
+        var service = device.services[serviceType];
+        console.log("  ---> " + service.meta.serviceType + " <---");
+        service.meta.actionsInfo.forEach(function (action) {
+            console.log("   # " + action.name + "()");
+            action.inArgs.forEach(function (arg) {
+                console.log("     IN : " + arg);
+            });
+            action.outArgs.forEach(function (arg) {
+                console.log("     OUT: " + arg);
+            });
+        });
+    });
+}
 ```
 
-## Configure a service
+##
+Methods
 
-Verify an API key that is provided by a user.
+### initTR064Device(host, port, callback)
 
-```javascript
-var prowl = require('myprowl');
-prowl.verify("USER-API-KEY",function(error,response){
-	if(!error){
-		console.log("valid");
-		console.log(response);
-	}else{
-		console.log(error);
-	}
-});
-```
+Initialize the TR - 064 UPnP controller
 
-## Subscribe to an Event
+* `host` - hostname of the device 
+* `port` - port of the device(standard: 49000) 
+* `callback` - (err, device)
 
-Allow applications to create API keys for users.
+### initIGDDevice(host, port, callback)
 
-### 1. Step: Get a registration token.
+Initialize the TR - 064 IGD controller
 
-```javascript
-var prowl = require('myprowl');
-prowl.keys.setProviderkey("Provider-KEY");
-prowl.retrieve.token(function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-		console.log("Token: "+response.retrieve.token);
-		console.log("Redirect user to url: "+response.retrieve.url);
-	}else{
-		console.log(error);
-	}
-});
-```
+* `host` - hostname of the device 
+* `port` - port of the device(standard: 49000) 
+* `callback` - (err, device)
 
-### 2. Step: Get the key.
+### device.meta
 
-```javascript
-var prowl = require('myprowl');
-prowl.keys.setProviderkey("Provider-KEY");
-prowl.retrieve.apikey("TOKEN",function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-		console.log("API key: "+response.retrieve.apikey);
-	}else{
-		console.log(error);
-	}
-});
-```
+Array with all info about services and actions
 
-## Methods
+### device.services[`Service Identifier`]
 
-### keys.setApikey(key)
+Gets the specified service form the device
 
-Set the API Key for your application. The key is used for the add API calls.
+* `Service Identifier` - usually in the form of: urn:dslforum-org:service:XXX:1
 
-* `key` - 40-byte hexadecimal string or multiple keys separated by commas.
-
-### keys.setProviderkey(key)
-
-Set the Provider Key for your application. The provider key is used for all API calls.
-
-* `key` - 40-byte hexadecimal string.
-
-### add.simple(app,event,description,callback)
-
-* `app` - Name of the application. [256 chars]
-* `event` - Name of the event or the subject. [1024 chars]
-* `description` - Description [10000 chars]
-* `callback` - callback(error,response)
-
-### add.complex(options,callback)
-
-* `options`
-    * `priority` - Notification priority. [-2,2] (Optional)
-    * `url` - URL which will be attached to the notification. [512 chars] (Optional)
-    * `app` - Name of the application. [256 chars]
-    * `event` - Name of the event or the subject. [1024 chars]
-    * `description` - Description [10000 chars]
-* `callback` - callback(error,response)
-
-### retrieve.token(callback)
-
-* `callback` - callback(error,response)
-
-### retrieve.apikey(token,callback)
-
-* `token` - Token returned from retrieve.token.
-* `callback` - callback(error,response)
+### service.actions.XXX([args], callback)
+* `args` - Array of args to configure or read a service.
+* `callback` - (err, result)
