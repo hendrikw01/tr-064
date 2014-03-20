@@ -1,0 +1,32 @@
+{
+    "name": "tr-064",
+    "version": "0.1.0",
+    "author": "Hendrik Westerberg <hendrik@gestorf.com>",
+    "description": "TR-064 - UPnP/IGD for node.js",
+    "scripts": {
+        "test": "node ./testing.js"
+    },
+    "main": "./lib/TR064",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hendrikw01/tr-064.git"
+    },
+    "keywords": [
+    "TR-064",
+    "UPnP",
+    "IGD",
+    "Fritz.Box",
+    "Router"
+  ],
+    "dependencies": {
+        "xml2js": "0.4.x",
+        "request": ">=2.30",
+        "eyes": "0.1.x",
+        "async": "0.2.x"
+    },
+    "analyze": false,
+    "license": "Apache License",
+    "engines": {
+        "node": ">=0.10"
+    }
+}
