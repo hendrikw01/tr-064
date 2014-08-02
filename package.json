@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "async": "0.2.x",
+    "digest-header": "0.0.1",
     "eyes": "0.1.x",
     "request": ">=2.30",
     "www-authenticate": "^0.6.2",
