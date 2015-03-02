@@ -9,8 +9,11 @@ A library to interact with routers and other network devices.
 Tested and designd for Fritz.Box routers.
 
 This library is capable of:
-* Supports the UPnP and IGD Protocol
+* Supports the UPnP, IGD and PMR (Samsung TV) Protocol
 * Read and configure Services
+* authentication with username/password or password only
+* SSL encryption
+* Transactions
 * Subscribe to Events with included EventServer
 
 More info about TR-064: http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_first_steps.pdf
@@ -26,16 +29,38 @@ More info about TR-064: http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_firs
 Connect to the device and read a Service.
 
 ```javascript
-var prowl = require('myprowl');
-prowl.keys.setApikey("API-KEY");
-prowl.add.simple("myApp","TestEvent","myDescription", function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-	}else{
-		console.log(error);
-	}
+var tr = require("tr-064");
+var tr064 = new tr.TR064();
+tr064.initTR064Device("fritz.box", 49000, function (err, device) {
+    if (!err) {
+       var wanip = device.services["urn:dslforum-org:service:WANIPConnection:1"];
+       wanip.actions.GetInfo(function(err, result){
+       		console.log(result);
+       });
+    }
 });
+
+```
+
+## Save communication (SSL Encryption, Authentication)
+
+```javascript
+var tr = require("tr-064");
+var tr064 = new tr.TR064();
+tr064.initTR064Device("fritz.box", 49000, function (err, device) {
+    if (!err) {
+        device.startEncryptedCommunication(function (err, sslDev) {
+            if (!err) {
+                sslDev.login([USER], [PASSWORD]);
+                var wanip = sslDev.services["urn:dslforum-org:service:WANIPConnection:1"];
+                wanip.actions.GetInfo(function (err, result) {
+                    console.log(result);
+                });
+            }
+        });
+    }
+});
+
 ```
 
 ## List All Services and Variables
@@ -43,114 +68,101 @@ prowl.add.simple("myApp","TestEvent","myDescription", function(error,response){
 Get the info from both protocols.
 
 ```javascript
-var prowl = require('myprowl');
-prowl.keys.setApikey("API-KEY");
-prowl.add.complex({
-		priority: 1,
-		url: "http://http://nodejs.org",
-		application: "TestApp",
-		event: "TestEvent",
-		description: "TestDescription"
-	}, 
-	function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-	}else{
-		console.log(error);
-	}
+var tr = require("tr-064");
+var tr064 = new tr.TR064();
+tr064.initTR064Device("fritz.box", 49000, function (err, device) {
+    if (!err) {
+        console.log("Found device! - TR-064");
+        showDevice(device);
+    }
 });
+
+tr064.initIGDDevice("fritz.box", 49000, function (err, device) {
+    if (!err) {
+        console.log("Found device! - IGD");
+        showDevice(device);
+    }
+});
+
+var showDevice = function (device) {
+    console.log("=== " + device.meta.friendlyName + " ===");
+    device.meta.servicesInfo.forEach(function (serviceType) {
+        var service = device.services[serviceType];
+        console.log("  ---> " + service.meta.serviceType + " <---");
+        service.meta.actionsInfo.forEach(function (action) {
+            console.log("   # " + action.name + "()");
+            action.inArgs.forEach(function (arg) {
+                console.log("     IN : " + arg);
+            });
+            action.outArgs.forEach(function (arg) {
+                console.log("     OUT: " + arg);
+            });
+        });
+    });
+}
 ```
 
-## Configure a service
+##
+Methods
 
-Verify an API key that is provided by a user.
+### initTR064Device(host, port, callback)
 
-```javascript
-var prowl = require('myprowl');
-prowl.verify("USER-API-KEY",function(error,response){
-	if(!error){
-		console.log("valid");
-		console.log(response);
-	}else{
-		console.log(error);
-	}
-});
-```
+Initialize the TR - 064 UPnP controller
 
-## Subscribe to an Event
+* `host` - hostname of the device 
+* `port` - port of the device(standard: 49000) 
+* `callback` - (err, device)
 
-Allow applications to create API keys for users.
+### initIGDDevice(host, port, callback)
 
-### 1. Step: Get a registration token.
+Initialize the TR - 064 IGD controller
 
-```javascript
-var prowl = require('myprowl');
-prowl.keys.setProviderkey("Provider-KEY");
-prowl.retrieve.token(function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-		console.log("Token: "+response.retrieve.token);
-		console.log("Redirect user to url: "+response.retrieve.url);
-	}else{
-		console.log(error);
-	}
-});
-```
+* `host` - hostname of the device 
+* `port` - port of the device(standard: 49000) 
+* `callback` - (err, device)
 
-### 2. Step: Get the key.
+### device.startEncryptedCommunication([caFile],callback)
 
-```javascript
-var prowl = require('myprowl');
-prowl.keys.setProviderkey("Provider-KEY");
-prowl.retrieve.apikey("TOKEN",function(error,response){
-	if(!error){
-		console.log("OK, remaining: "+response.success.remaining+
-					" , resetdate: "+response.success.resetdate);
-		console.log("API key: "+response.retrieve.apikey);
-	}else{
-		console.log(error);
-	}
-});
-```
+Starts SSL encripted Communication
 
-## Methods
+* `caFile` - Filename of custom .pem file (Optional)
+* `callback` - (err, device)
 
-### keys.setApikey(key)
+### device.stopEncryptedCommunication()
 
-Set the API Key for your application. The key is used for the add API calls.
+Stops SSL encripted Communication
 
-* `key` - 40-byte hexadecimal string or multiple keys separated by commas.
+### device.login([user],password)
 
-### keys.setProviderkey(key)
+Configure device to use authentication for every request
 
-Set the Provider Key for your application. The provider key is used for all API calls.
+* `user` - Username (Optional, default device user is used instead)
+* `password` - Device password
 
-* `key` - 40-byte hexadecimal string.
+### device.logout()
 
-### add.simple(app,event,description,callback)
+Configure device to not use authentication
 
-* `app` - Name of the application. [256 chars]
-* `event` - Name of the event or the subject. [1024 chars]
-* `description` - Description [10000 chars]
-* `callback` - callback(error,response)
+### device.startTransaction(callback)
 
-### add.complex(options,callback)
+Starts a 'device-side' transaction
 
-* `options`
-    * `priority` - Notification priority. [-2,2] (Optional)
-    * `url` - URL which will be attached to the notification. [512 chars] (Optional)
-    * `app` - Name of the application. [256 chars]
-    * `event` - Name of the event or the subject. [1024 chars]
-    * `description` - Description [10000 chars]
-* `callback` - callback(error,response)
+* `callback` - (err, device)
 
-### retrieve.token(callback)
+### device.stopTransaction()
 
-* `callback` - callback(error,response)
+Ends the current transaction
 
-### retrieve.apikey(token,callback)
+### device.meta
 
-* `token` - Token returned from retrieve.token.
-* `callback` - callback(error,response)
+Array with all info about services and actions
+
+### device.services[`Service Identifier`]
+
+Gets the specified service form the device
+
+* `Service Identifier` - usually in the form of: urn:dslforum-org:service:XXX:1
+
+### service.actions.XXX([args], callback)
+* `args` - Array of args to configure or read a service.
+* `callback` - (err, result)

@@ -1,6 +1,6 @@
 {
     "name": "tr-064",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "author": "Hendrik Westerberg <hendrik@gestorf.com>",
     "description": "TR-064 - UPnP/IGD for node.js",
     "scripts": {
@@ -19,10 +19,10 @@
     "Router"
   ],
     "dependencies": {
-        "xml2js": "0.4.x",
+        "xml2js": ">=0.4.0",
         "request": ">=2.30",
-        "eyes": "0.1.x",
-        "async": "0.2.x"
+        "eyes": ">=0.1.0",
+        "async": ">=0.2.0"
     },
     "analyze": false,
     "license": "Apache License",
