@@ -11,7 +11,7 @@ Tested and designd for Fritz.Box routers.
 This library is capable of:
 * Supports the UPnP, IGD and PMR (Samsung TV) Protocol
 * Read and configure Services
-* authentication with username/password or password only
+* Authentication with username/password or password only
 * SSL encryption
 * Transactions
 * Subscribe to Events with included EventServer
@@ -102,8 +102,7 @@ var showDevice = function (device) {
 }
 ```
 
-##
-Methods
+## Methods
 
 ### initTR064Device(host, port, callback)
 
@@ -123,14 +122,14 @@ Initialize the TR - 064 IGD controller
 
 ### device.startEncryptedCommunication([caFile],callback)
 
-Starts SSL encripted Communication
+Starts SSL encrypted Communication
 
 * `caFile` - Filename of custom .pem file (Optional)
 * `callback` - (err, device)
 
 ### device.stopEncryptedCommunication()
 
-Stops SSL encripted Communication
+Stops SSL encrypted Communication
 
 ### device.login([user],password)
 
