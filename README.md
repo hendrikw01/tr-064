@@ -16,7 +16,7 @@ This library is capable of:
 * Transactions
 * Subscribe to Events with included EventServer
 
-More info about TR-064: http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_first_steps.pdf
+More info about TR-064: http://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_TR-064_first_steps.pdf
 
 ## Install
 
