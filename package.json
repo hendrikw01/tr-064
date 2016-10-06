@@ -1,32 +1,46 @@
 {
-    "name": "tr-064",
-    "version": "0.2.0",
-    "author": "Hendrik Westerberg <hendrik@gestorf.com>",
-    "description": "TR-064 - UPnP/IGD for node.js",
-    "scripts": {
-        "test": "node ./testing.js"
-    },
-    "main": "./lib/TR064",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/hendrikw01/tr-064.git"
-    },
-    "keywords": [
+  "name": "tr-O64",
+  "version": "0.2.2",
+  "author": {
+    "name": "Soef fork of Hendrik Westerberg",
+    "email": "hendrik@gestorf.com"
+  },
+  "description": "TR-064 - UPnP/IGD for node.js",
+  "scripts": {
+    "test": "node ./testing.js"
+  },
+  "main": "./lib/TR064",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soef/tr-O64.git"
+  },
+  "keywords": [
     "TR-064",
     "UPnP",
     "IGD",
     "Fritz.Box",
     "Router"
   ],
-    "dependencies": {
-        "xml2js": ">=0.4.0",
-        "request": ">=2.30",
-        "eyes": ">=0.1.0",
-        "async": ">=0.2.0"
-    },
-    "analyze": false,
-    "license": "Apache License",
-    "engines": {
-        "node": ">=0.10"
-    }
+  "dependencies": {
+    "xml2js": ">=0.4.0",
+    "request": ">=2.30",
+    "eyes": ">=0.1.0",
+    "async": ">=0.2.0"
+  },
+  "analyze": false,
+  "license": "Apache License",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "readme": "tr-064\r\n======\r\n\r\nTR-064 - UPnP/IGD for node.js\r\n\r\n## Description\r\n\r\nA library to interact with routers and other network devices.\r\nTested and designd for Fritz.Box routers.\r\n\r\nThis library is capable of:\r\n* Supports the UPnP, IGD and PMR (Samsung TV) Protocol\r\n* Read and configure Services\r\n* Authentication with username/password or password only\r\n* SSL encryption\r\n* Transactions\r\n* Subscribe to Events with included EventServer\r\n\r\nMore info about TR-064: http://www.avm.de/de/Extern/files/tr-064/AVM_TR-064_first_steps.pdf\r\n\r\n## Install\r\n\r\n<pre>\r\n  npm install tr-064\r\n</pre>\r\n\r\n## It`s simple\r\n\r\nConnect to the device and read a Service.\r\n\r\n```javascript\r\nvar tr = require(\"tr-064\");\r\nvar tr064 = new tr.TR064();\r\ntr064.initTR064Device(\"fritz.box\", 49000, function (err, device) {\r\n    if (!err) {\r\n       var wanip = device.services[\"urn:dslforum-org:service:WANIPConnection:1\"];\r\n       wanip.actions.GetInfo(function(err, result){\r\n       \t\tconsole.log(result);\r\n       });\r\n    }\r\n});\r\n\r\n```\r\n\r\n## Save communication (SSL Encryption, Authentication)\r\n\r\n```javascript\r\nvar tr = require(\"tr-064\");\r\nvar tr064 = new tr.TR064();\r\ntr064.initTR064Device(\"fritz.box\", 49000, function (err, device) {\r\n    if (!err) {\r\n        device.startEncryptedCommunication(function (err, sslDev) {\r\n            if (!err) {\r\n                sslDev.login([USER], [PASSWORD]);\r\n                var wanip = sslDev.services[\"urn:dslforum-org:service:WANIPConnection:1\"];\r\n                wanip.actions.GetInfo(function (err, result) {\r\n                    console.log(result);\r\n                });\r\n            }\r\n        });\r\n    }\r\n});\r\n\r\n```\r\n\r\n## List All Services and Variables\r\n\r\nGet the info from both protocols.\r\n\r\n```javascript\r\nvar tr = require(\"tr-064\");\r\nvar tr064 = new tr.TR064();\r\ntr064.initTR064Device(\"fritz.box\", 49000, function (err, device) {\r\n    if (!err) {\r\n        console.log(\"Found device! - TR-064\");\r\n        showDevice(device);\r\n    }\r\n});\r\n\r\ntr064.initIGDDevice(\"fritz.box\", 49000, function (err, device) {\r\n    if (!err) {\r\n        console.log(\"Found device! - IGD\");\r\n        showDevice(device);\r\n    }\r\n});\r\n\r\nvar showDevice = function (device) {\r\n    console.log(\"=== \" + device.meta.friendlyName + \" ===\");\r\n    device.meta.servicesInfo.forEach(function (serviceType) {\r\n        var service = device.services[serviceType];\r\n        console.log(\"  ---> \" + service.meta.serviceType + \" <---\");\r\n        service.meta.actionsInfo.forEach(function (action) {\r\n            console.log(\"   # \" + action.name + \"()\");\r\n            action.inArgs.forEach(function (arg) {\r\n                console.log(\"     IN : \" + arg);\r\n            });\r\n            action.outArgs.forEach(function (arg) {\r\n                console.log(\"     OUT: \" + arg);\r\n            });\r\n        });\r\n    });\r\n}\r\n```\r\n\r\n## Methods\r\n\r\n### initTR064Device(host, port, callback)\r\n\r\nInitialize the TR - 064 UPnP controller\r\n\r\n* `host` - hostname of the device \r\n* `port` - port of the device(standard: 49000) \r\n* `callback` - (err, device)\r\n\r\n### initIGDDevice(host, port, callback)\r\n\r\nInitialize the TR - 064 IGD controller\r\n\r\n* `host` - hostname of the device \r\n* `port` - port of the device(standard: 49000) \r\n* `callback` - (err, device)\r\n\r\n### device.startEncryptedCommunication([caFile],callback)\r\n\r\nStarts SSL encrypted Communication\r\n\r\n* `caFile` - Filename of custom .pem file (Optional)\r\n* `callback` - (err, device)\r\n\r\n### device.stopEncryptedCommunication()\r\n\r\nStops SSL encrypted Communication\r\n\r\n### device.login([user],password)\r\n\r\nConfigure device to use authentication for every request\r\n\r\n* `user` - Username (Optional, default device user is used instead)\r\n* `password` - Device password\r\n\r\n### device.logout()\r\n\r\nConfigure device to not use authentication\r\n\r\n### device.startTransaction(callback)\r\n\r\nStarts a 'device-side' transaction\r\n\r\n* `callback` - (err, device)\r\n\r\n### device.stopTransaction()\r\n\r\nEnds the current transaction\r\n\r\n### device.meta\r\n\r\nArray with all info about services and actions\r\n\r\n### device.services[`Service Identifier`]\r\n\r\nGets the specified service form the device\r\n\r\n* `Service Identifier` - usually in the form of: urn:dslforum-org:service:XXX:1\r\n\r\n### service.actions.XXX([args], callback)\r\n* `args` - Array of args to configure or read a service.\r\n* `callback` - (err, result)",
+  "readmeFilename": "README.md",
+  "gitHead": "c94dcbedd35d6be581d5b64878f8d7593735b57e",
+  "bugs": {
+    "url": "https://github.com/soef/tr-O64/issues"
+  },
+  "homepage": "https://github.com/soef/tr-O64#readme",
+  "_id": "tr-O64@0.2.1",
+  "_shasum": "3d91c908e309404399b5f9fcb8e0d4c2b96fda7c",
+  "_from": "node_modules\\tr-O64",
+  "_resolved": "file:node_modules\\tr-O64"
 }
