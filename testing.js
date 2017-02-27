@@ -8,29 +8,29 @@ var inspect = require('eyes').inspector({
 var util = require("util");
 var tr = require("./lib/TR064");
 
-var showCallback = function (err, result) {
+var showCallback = function(err, result) {
     if (!err) {
         inspect(result);
     }
 }
 
-var speedCB = function (err, result) {
+var speedCB = function(err, result) {
     util.print(result.NewByteReceiveRate + "  ");
 
 }
 
-var showDevice = function (device) {
+var showDevice = function(device) {
 
     console.log("=== " + device.meta.friendlyName + " ===");
-    device.meta.servicesInfo.forEach(function (serviceType) {
+    device.meta.servicesInfo.forEach(function(serviceType) {
         var service = device.services[serviceType];
         console.log("  ---> " + service.meta.serviceType + " <---");
-        service.meta.actionsInfo.forEach(function (action) {
+        service.meta.actionsInfo.forEach(function(action) {
             console.log("   # " + action.name + "()");
-            action.inArgs.forEach(function (arg) {
+            action.inArgs.forEach(function(arg) {
                 console.log("     IN : " + arg);
             });
-            action.outArgs.forEach(function (arg) {
+            action.outArgs.forEach(function(arg) {
                 console.log("     OUT: " + arg);
             });
         });
@@ -42,7 +42,7 @@ var tr064 = new tr.TR064();
 
 //tr064.startEventServer(44880);
 
-tr064.initIGDDevice("fritz.box", 49000, function (err, device) {
+tr064.initIGDDevice("fritz.box", 49000, function(err, device) {
     if (!err) {
         console.log("Found device! - IGD");
         showDevice(device);
@@ -65,16 +65,16 @@ Example: Get the url from the first phonebook.
 */
 var user = "user";
 var password = "password";
-tr064.initTR064Device("fritz.box", 49000, function (err, device) {
+tr064.initTR064Device("fritz.box", 49000, function(err, device) {
     if (!err) {
         console.log("Found device! - TR-064");
-        device.startEncryptedCommunication(function (err, sslDev) {
+        device.startEncryptedCommunication(function(err, sslDev) {
             if (!err) {
                 sslDev.login(user, password);
                 var wanppp = sslDev.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"];
                 wanppp.actions.GetPhonebook({
                     NewPhonebookID: '0'
-                }, function (err, ret) {
+                }, function(err, ret) {
                     if (err) {
                         console.log(err);
                         return;
@@ -85,6 +85,44 @@ tr064.initTR064Device("fritz.box", 49000, function (err, device) {
                         console.log(url);
                     }
                 });
+            } else {
+                console.log(err);
+            }
+        });
+    }
+});
+
+/*
+Example: Turn off/on WLAN on FritzBoxes.
+*/
+var user = "user";
+var password = "password";
+tr064.initTR064Device("fritz.box", 49000, function(err, device) {
+    if (!err) {
+        console.log("Found device! - TR-064");
+        device.startEncryptedCommunication(function(err, sslDev) {
+            if (!err) {
+                sslDev.login(user, password);
+                var wlan24 = sslDev.services["urn:dslforum-org:service:WLANConfiguration:1"];
+                var wlan5 = sslDev.services["urn:dslforum-org:service:WLANConfiguration:2"];
+                var wlanGuest = sslDev.services["urn:dslforum-org:service:WLANConfiguration:3"];
+                //                                                1 for on and 0 for off                
+                wlan24.actions.SetEnable([{ name: 'NewEnable', value: '1' }], function(err, result) {
+                    console.log(err);
+                    console.log(result);
+                });
+                //                                                1 for on and 0 for off
+                wlan5.actions.SetEnable([{ name: 'NewEnable', value: '1' }], function(err, result) {
+                    console.log(err);
+                    console.log(result);
+                });
+                //                                                1 for on and 0 for off
+                wlanGuest.actions.SetEnable([{ name: 'NewEnable', value: '1' }], function(err, result) {
+                    console.log(err);
+                    console.log(result);
+                });
+
+
             } else {
                 console.log(err);
             }
