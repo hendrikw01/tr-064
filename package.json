@@ -1,6 +1,6 @@
 {
     "name": "tr-064",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "author": "Hendrik Westerberg <hendrik@gestorf.com>",
     "description": "TR-064 - UPnP/IGD for node.js",
     "scripts": {
@@ -12,12 +12,12 @@
         "url": "https://github.com/hendrikw01/tr-064.git"
     },
     "keywords": [
-    "TR-064",
-    "UPnP",
-    "IGD",
-    "Fritz.Box",
-    "Router"
-  ],
+        "TR-064",
+        "UPnP",
+        "IGD",
+        "Fritz.Box",
+        "Router"
+    ],
     "dependencies": {
         "xml2js": ">=0.4.0",
         "request": ">=2.30",
