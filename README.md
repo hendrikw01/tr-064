@@ -162,6 +162,13 @@ Gets the specified service form the device
 
 * `Service Identifier` - usually in the form of: urn:dslforum-org:service:XXX:1
 
-### service.actions.XXX([args], callback)
-* `args` - Array of args to configure or read a service.
+### service.actions.XXX([{name: 'xx', value: 'xx'}], callback)
+* `name` - Argumentname for Action
+* `value` - Argumentvalue for Action
 * `callback` - (err, result)
+
+```javascript
+service.actions.SetEnable([{name: 'NewEnable', value: '1'}], function (err, result) {
+    console.log(result);
+});
+```
